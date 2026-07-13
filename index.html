@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 사진 갤러리 (가변형 폴더 관리)</title>
+    <title> MY PHOTO </title>
     <style>
+        /* 1. 전체 페이지 기본 스타일 */
         body {
             font-family: 'Malgun Gothic', sans-serif;
             background-color: #f9f9f9;
@@ -18,7 +19,7 @@
             margin-bottom: 20px;
         }
 
-        /* 메뉴 전체 컨테이너 */
+        /* 2. 폴더 연동 메뉴 스타일 */
         .filter-menu {
             margin-bottom: 30px;
             background: white;
@@ -46,7 +47,7 @@
             justify-content: center;
         }
 
-        /* 버튼 스타일 */
+        /* 버튼 기본 디자인 */
         .btn {
             background-color: #f5f5f5;
             border: 1px solid #ddd;
@@ -58,13 +59,14 @@
             transition: all 0.2s ease;
         }
 
+        /* 마우스를 올리거나 활성화된 버튼 디자인 */
         .btn:hover, .btn.active {
             background-color: #333;
             color: white;
             border-color: #333;
         }
 
-        /* 갤러리 그리드 레이아웃 */
+        /* 3. 사진 격자(그리드) 레이아웃 */
         .gallery-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -73,6 +75,7 @@
             margin: 0 auto;
         }
 
+        /* 개별 사진 카드 스타일 */
         .photo-card {
             background: white;
             padding: 12px;
@@ -90,8 +93,10 @@
             height: auto;
             border-radius: 4px;
             object-fit: cover;
+            cursor: zoom-in; /* 마우스 올리면 돋보기 모양으로 변경 */
         }
 
+        /* 카드 내부 경로 표시 태그 */
         .photo-path {
             font-size: 11px;
             color: #0076ff;
@@ -108,29 +113,64 @@
             font-size: 15px;
             font-weight: bold;
         }
+
+        /* 4. 📸 사진 확대 모달 팝업 스타일 */
+        .modal {
+            display: none; /* 기본 상태는 숨김 */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* 반투명 검은 배경 */
+            cursor: zoom-out;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            animation: zoomIn 0.25s ease; /* 나타날 때 팝업 애니메이션 */
+        }
+
+        @keyframes zoomIn {
+            from { transform: translateY(-50%) scale(0.9); opacity: 0; }
+            to { transform: translateY(-50%) scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>📸 My Photo</h1>
+    <h1>📸 My Photography Gallery</h1>
 
     <!-- 📂 상위 폴더 선택에 따라 동적으로 바뀌는 메뉴 영역 -->
     <div class="filter-menu">
         <!-- 1층: 상위 폴더 (메인 테마) -->
         <div class="menu-row">
             <span class="menu-label">상위 폴더 📁</span>
-            <button class="btn" onclick="filterParent('album')">album</button>
+            <button class="btn active" onclick="filterParent('all')">전체보기</button>
+            <button class="btn" onclick="filterParent('album')">album </button>
             <button class="btn" onclick="filterParent('family')">family</button>
         </div>
         
-        <!-- 2층: 하위 폴더 (상위 폴더에 따라 버튼이 나타났다 사라집니다) -->
+        <!-- 2층: 하위 폴더 (상위 폴더에 따라 유동적으로 차단/노출) -->
         <div class="menu-row" id="child-menu-row">
             <span class="menu-label">하위 폴더 📂</span>
+            <button class="btn child-btn active" data-parent="all" onclick="filterChild('all')">전체 항목</button>
             
-            <!-- 각 하위 폴더 버튼에 어떤 상위 폴더(data-parent)에 속하는지 적어줍니다 -->
+            <!-- album 폴더 하위 항목들 -->
             <button class="btn child-btn" data-parent="album" onclick="filterChild('july')">july</button>
             <button class="btn child-btn" data-parent="album" onclick="filterChild('kintex')">26킨텍스</button>
             <button class="btn child-btn" data-parent="album" onclick="filterChild('sungkok')">성곡미술관</button>
+            
+            <!-- family 폴더 하위 항목들 -->
             <button class="btn child-btn" data-parent="family" onclick="filterChild('explore')">채집</button>
             <button class="btn child-btn" data-parent="family" onclick="filterChild('vocan')">휴가</button>
         </div>
@@ -139,93 +179,98 @@
     <!-- 🖼️ 사진 목록 영역 -->
     <div class="gallery-container">
         
+        <!-- 26킨텍스 사진 데이터 -->
         <div class="photo-card" data-parent="album" data-child="kintex">
-            <img src="album/kintex/photo1.jpg" alt="2607_킨텍스">
-            <span class="photo-path">album/kintex</span>
+            <img src="album/kintex/photo1.jpg" alt="2607_킨텍스" onclick="openModal(this.src)">
+            <span class="photo-path">album / kintex</span>
             <p class="photo-title">26킨텍스고</p>
         </div>
- <div class="photo-card" data-parent="album" data-child="kintex">
-            <img src="album/kintex/photo2.jpg" alt="2607_킨텍스">
-            <span class="photo-path">album/kintex</span>
+        <div class="photo-card" data-parent="album" data-child="kintex">
+            <img src="album/kintex/photo2.jpg" alt="2607_킨텍스" onclick="openModal(this.src)">
+            <span class="photo-path">album / kintex</span>
             <p class="photo-title">첫기차</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="kintex">
-            <img src="album/kintex/photo3.jpg" alt="2607_킨텍스">
-            <span class="photo-path">album/kintex</span>
+        <div class="photo-card" data-parent="album" data-child="kintex">
+            <img src="album/kintex/photo3.jpg" alt="2607_킨텍스" onclick="openModal(this.src)">
+            <span class="photo-path">album / kintex</span>
             <p class="photo-title">서울역도착</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="kintex">
-            <img src="album/kintex/photo4.jpg" alt="2607_킨텍스">
-            <span class="photo-path">album/kintex</span>
+        <div class="photo-card" data-parent="album" data-child="kintex">
+            <img src="album/kintex/photo4.jpg" alt="2607_킨텍스" onclick="openModal(this.src)">
+            <span class="photo-path">album / kintex</span>
             <p class="photo-title">늦은저녁</p>
         </div>
 
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo1.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <!-- 성곡미술관 사진 데이터 -->
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo1.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">전경</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo2.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo2.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">입구</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo3.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo3.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">전시장1</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo4.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo4.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">느낌1</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo5.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo5.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">느낌2</p>
         </div>
-<div class="photo-card" data-parent="album" data-child="sungkok">
-            <img src="album/sungkok/photo6.jpg" alt="성곡미술관">
-            <span class="photo-path">album/sungkok</span>
+        <div class="photo-card" data-parent="album" data-child="sungkok">
+            <img src="album/sungkok/photo6.jpg" alt="성곡미술관" onclick="openModal(this.src)">
+            <span class="photo-path">album / sungkok</span>
             <p class="photo-title">전시장2</p>
         </div>
 
-
-<div class="photo-card" data-parent="family" data-child="explore">
-            <img src="family/explore/photo1.jpg" alt="채집">
-            <span class="photo-path">family/explore</span>
+        <!-- 가족 채집 사진 데이터 -->
+        <div class="photo-card" data-parent="family" data-child="explore">
+            <img src="family/explore/photo1.jpg" alt="채집" onclick="openModal(this.src)">
+            <span class="photo-path">family / explore</span>
             <p class="photo-title">연장준비</p>
         </div>
-<div class="photo-card" data-parent="family" data-child="explore">
-            <img src="family/explore/photo2.jpg" alt="채집">
-            <span class="photo-path">family/explore</span>
+        <div class="photo-card" data-parent="family" data-child="explore">
+            <img src="family/explore/photo2.jpg" alt="채집" onclick="openModal(this.src)">
+            <span class="photo-path">family / explore</span>
             <p class="photo-title">탐험</p>
         </div>
-<div class="photo-card" data-parent="family" data-child="explore">
-            <img src="family/explore/photo3.jpg" alt="채집">
-            <span class="photo-path">family/explore</span>
+        <div class="photo-card" data-parent="family" data-child="explore">
+            <img src="family/explore/photo3.jpg" alt="채집" onclick="openModal(this.src)">
+            <span class="photo-path">family / explore</span>
             <p class="photo-title">출발</p>
         </div>
 
     </div>
 
-    <!-- ⚙️ 동적 메뉴 연동 자바스크립트 -->
+    <!-- 📸 사진 확대 팝업 모달 상자 영역 -->
+    <div id="photoModal" class="modal" onclick="closeModal()">
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <!-- ⚙️ 자바스크립트 통합 제어 엔진 -->
     <script>
         let currentParent = 'all';
         let currentChild = 'all';
 
-        // 상위 폴더 버튼을 눌렀을 때
+        // 1. 상위 폴더 버튼 클릭 시 연동 기능
         function filterParent(parentFolder) {
             currentParent = parentFolder;
-            currentChild = 'all'; // 상위 폴더가 바뀌면 하위 폴더 선택은 '전체'로 초기화
+            currentChild = 'all'; 
 
-            // 1. 상위 버튼 디자인 활성화 변경
             const parentButtons = event.target.parentElement.querySelectorAll('.btn');
             parentButtons.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // 2. 하위 버튼 선택 디자인도 '전체 지역'으로 초기화
             const childButtons = document.querySelectorAll('.child-btn');
             childButtons.forEach(btn => {
                 btn.classList.remove('active');
@@ -234,25 +279,23 @@
                 }
             });
 
-            // 3. ⭐ 핵심: 상위 폴더에 해당하지 않는 하위 폴더 '버튼' 숨기기
+            // 해당하지 않는 하위 폴더 버튼 숨기기/보이기
             childButtons.forEach(btn => {
                 const btnParent = btn.getAttribute('data-parent');
-                
                 if (parentFolder === 'all' || btnParent === 'all' || btnParent === parentFolder) {
-                    btn.style.display = 'inline-block'; // 보이기
+                    btn.style.display = 'inline-block';
                 } else {
-                    btn.style.display = 'none'; // 숨기기
+                    btn.style.display = 'none';
                 }
             });
 
             applyFilter();
         }
 
-        // 하위 폴더 버튼을 눌렀을 때
+        // 2. 하위 폴더 버튼 클릭 시 기능
         function filterChild(childFolder) {
             currentChild = childFolder;
 
-            // 하위 버튼 디자인 활성화 변경
             const childButtons = event.target.parentElement.querySelectorAll('.child-btn');
             childButtons.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -260,7 +303,7 @@
             applyFilter();
         }
 
-        // 사진 필터링 적용
+        // 3. 사진 필터링 최종 적용 시스템
         function applyFilter() {
             const cards = document.querySelectorAll('.photo-card');
 
@@ -277,6 +320,20 @@
                     card.style.display = 'none';
                 }
             });
+        }
+
+        // 4. 📸 사진 클릭 시 확대 팝업 열기/닫기 시스템
+        function openModal(imgSrc) {
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalImage');
+            
+            modal.style.display = 'block';
+            modalImg.src = imgSrc;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
         }
     </script>
 
